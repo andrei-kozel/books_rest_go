@@ -7,65 +7,65 @@ import (
 	"helloworldapp/config"
 	"log"
 	"os"
+	"strconv"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
-
 const (
-    dialect = "pgx"
-    dbString = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
+	dialect  = "pgx"
+	dbString = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
 )
 
 var (
-    flags = flag.NewFlagSet("migrate", flag.ExitOnError)
-    dir = flags.String("dir", "migrations", "directory with migration files (default is 'migrations')")
+	flags = flag.NewFlagSet("migrate", flag.ExitOnError)
+	dir   = flags.String("dir", "migrations", "directory with migration files (default is 'migrations')")
 )
 
 func main() {
-    flags.Usage = usage 
-    flags.Parse(os.Args[1:])
-    ctx := context.Background()
+	flags.Usage = usage
+	flags.Parse(os.Args[1:])
+	ctx := context.Background()
 
-    args := flags.Args()
-    if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
-        flags.Usage()
-        return
-    }
+	args := flags.Args()
+	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
+		flags.Usage()
+		return
+	}
 
-    command := args[0]
-    c := config.NewDB()
-    dbString := fmt.Sprintf(dbString, c.Host, c.Port, c.Username, c.Password, c.DBName, c.Port)
+	command := args[0]
+	c := config.NewDB()
+	dbString := fmt.Sprintf(dbString, c.Host, strconv.Itoa(c.Port), c.Username, c.Password, c.DBName)
 
-    db, err := goose.OpenDBWithDriver(dialect, dbString)
-    if err != nil {
-        log.Fatalf("goose: failed to open DB: %v\n", err)
-    }
+	db, err := goose.OpenDBWithDriver(dialect, dbString)
+	if err != nil {
+		log.Fatalf("goose: failed to open DB: %v\n", err)
+	}
 
-    defer func() {
-        if err := db.Close(); err != nil {
-            log.Fatalf("goose: failed to close DB: %v\n", err)
-        }
-    }()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Fatalf("goose: failed to close DB: %v\n", err)
+		}
+	}()
 
-    if err := goose.RunContext(ctx, command, db, *dir, args[1:]...); err != nil {
-        log.Fatalf("goose run: %v", err)
-    }
+	if err := goose.RunContext(ctx, command, db, *dir, args[1:]...); err != nil {
+		log.Fatalf("goose run: %v", err)
+	}
 }
 
 func usage() {
-    fmt.Print(usagePrefix)
-    flags.PrintDefaults()
-    fmt.Print(usageCommands)
+	fmt.Print(usagePrefix)
+	flags.PrintDefaults()
+	fmt.Print(usageCommands)
 }
 
 var (
-    usagePrefix = `Usage: goose [OPTIONS] COMMAND
+	usagePrefix = `Usage: goose [OPTIONS] COMMAND
 Examples:
     migrate status
 `
-    usageCommands = `
+	usageCommands = `
 Commands:
     up                   Migrate the DB to the most recent version available
     up-by-one            Migrate the DB up by 1
