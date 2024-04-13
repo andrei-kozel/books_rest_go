@@ -1,6 +1,7 @@
 package book
 
 import (
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -11,11 +12,13 @@ type Repository struct {
 
 type API struct {
 	repository *Repository
+	validator  *validator.Validate
 }
 
-func New(db *gorm.DB) *API {
+func New(db *gorm.DB, v *validator.Validate) *API {
 	return &API{
 		repository: NewRepository(db),
+		validator:  v,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"helloworldapp/api/router"
 	"helloworldapp/config"
+	"helloworldapp/utils/validator"
 	"log"
 	"net/http"
 
@@ -21,6 +22,7 @@ const fmtDBString = "host=%s user=%s password=%s dbname=%s port=%d sslmode=disab
 // @basePath   /v1
 func main() {
 	c := config.New()
+	v := validator.New()
 
 	var logLevel gormlogger.LogLevel
 	if c.DB.Debug {
@@ -36,7 +38,7 @@ func main() {
 		return
 	}
 
-	r := router.New(db)
+	r := router.New(db, v)
 	s := &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Server.Port),
 		Handler:      r,
